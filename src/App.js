@@ -4,20 +4,34 @@ function App() {
   const [todos, setTodos] = useState([]);
   const [task, setTask] = useState("");
   const [portfolio, setPortfolio] = useState([]);
-  const API_URL = "https://todo-backend-q3d3.onrender.com";
+  const API_URL = "https://todo-list-lb6g.onrender.com"; // updated to your todo-list backend
 
   // Fetch todos
   useEffect(() => {
     fetch(`${API_URL}/todos`)
       .then((res) => res.json())
-      .then(setTodos);
+      .then(setTodos)
+      .catch((err) => console.error("Failed to fetch todos:", err));
   }, []);
 
-  // Fetch portfolio items
+  // Fetch portfolio projects
   useEffect(() => {
-    fetch(`${API_URL}/portfolio`)
+    fetch(`${API_URL}/projects`) // updated endpoint
       .then((res) => res.json())
-      .then(setPortfolio);
+      .then((data) => {
+        // Handle both [] or {"projects": []} formats
+        if (Array.isArray(data)) {
+          setPortfolio(data);
+        } else if (Array.isArray(data.projects)) {
+          setPortfolio(data.projects);
+        } else {
+          setPortfolio([]); // fallback
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch projects:", err);
+        setPortfolio([]); // fallback
+      });
   }, []);
 
   const addTodo = () => {
@@ -55,7 +69,7 @@ function App() {
       ) : (
         <ul>
           {portfolio.map((p) => (
-            <li key={p.id}>
+            <li key={p.id || p.name}>
               <strong>{p.name}</strong>: {p.description}{" "}
               {p.link && (
                 <a href={p.link} target="_blank" rel="noopener noreferrer">
